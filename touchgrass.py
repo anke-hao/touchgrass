@@ -3,6 +3,7 @@ import requests
 import streamlit as st
 import vertexai
 import json
+import maps_functionalities
 from google.maps import places_v1
 from vertexai.generative_models import (
     GenerationConfig,
@@ -83,7 +84,7 @@ def get_gemini_pro_vision_response(
 
 #  may or may not use this
 def construct_query(cuisine, vibe):
-    return vibe + cuisine + ('restaurant' if cuisine != "cafe" else '')
+    return f'{vibe} {cuisine}' + ('restaurant' if cuisine != "cafe" else '')
     
 def construct_budget(budget):
     price_dict = {'casual': 'PRICE_LEVEL_INEXPENSIVE', 
@@ -100,10 +101,16 @@ def get_food_type(cuisine):
     else:
         return ["cafe"]
         
-
-
-        
-
+def display_choices(responses):
+    for response in responses:
+        st.write(f"Place: {response['displayName']['text']}")
+        st.write(f"Rating: {response['rating']}")
+        st.write(f"Number of Reviews: {response['userRatingCount']}")
+        if 'generativeSummary' in response:
+            st.write(f"About: {response['generativeSummary']['overview']['text']}")
+        else:
+            st.write("Haven't got a summary for this one. Must be good though!")
+    
 st.header("touchgrass", divider="rainbow")
 text_model_pro, multimodal_model_pro = load_models()
 
@@ -116,13 +123,13 @@ with tab1:
     st.subheader("Find Food")
 
     # This will get replaced with get location
-    location = st.text_input(
-        "What city are you in? \n\n", key="location", value="sf"
+    # location = st.text_input(
+    #     "What city are you in? \n\n", key="location", value="sf"
+    # )
+    query = st.text_input(
+        "What kind of food are you in the mood for? \n\n", key="user_query", value="japanese"
     )
-    cuisine = st.text_input(
-        "What kind of food are you in the mood for? \n\n", key="cuisine", value="japanese"
-    )
-    budget = st.multiselect(
+    budget = st.radio(
         "What's your budget? \n\n",
         [
             "casual",
@@ -130,30 +137,28 @@ with tab1:
             "fine dining",
         ],
         key="budget",
-        default=["mid-range"],
     )
-    vibe = st.multiselect(
-        "What kind of vibe are you looking for? \n\n",
-        [
-            "trendy",
-            "lively",
-            "romantic",
-            "casual",
-        ],
-        key="vibe",
-        default=["trendy"],
-    )
+    # vibe = st.radio(
+    #     "What kind of vibe are you looking for? \n\n",
+    #     [
+    #         "trendy",
+    #         "lively",
+    #         "romantic",
+    #         "casual",
+    #     ],
+    #     key="vibe",
+    #     default=["trendy"],
+    # )
     num_recs = st.slider(
         "How many recommendations are you looking for? \n\n",
-        1, 5, 3
+        1, 5, 3,
+        key="num_recs"
     )
 
     prompt = f"""You are a helpful local guide who knows the best restaurants in the area. \n
     Your goal is to recommend great restaurants based on the requirements of the user. \n
-    cuisine: {cuisine} \n
-    location: {location} \n
+    cuisine: {query} \n
     budget: {budget} \n
-    vibe: {vibe} \n
     how many recommendations: {num_recs}
     """
     config = {
@@ -165,15 +170,21 @@ with tab1:
     if generate_t2t and prompt:
         # st.write(prompt)
         with st.spinner("Generating delicious matches ..."):
-            first_tab1, first_tab2 = st.tabs(["Matches", "Prompt"])
-            with first_tab1:
-                response = get_gemini_pro_text_response(
-                    text_model_pro,
-                    prompt,
-                    generation_config=config,
-                )
-                if response:
-                    st.write("Your matches:")
-                    st.write(response)
-            with first_tab2:
-                st.text(prompt)
+            # first_tab1, first_tab2 = st.tabs(["Matches", "Prompt"])
+            # with first_tab1:
+                # response = get_gemini_pro_text_response(
+                #     text_model_pro,
+                #     prompt,
+                #     generation_config=config,
+                # )
+            responses = maps_functionalities.places_hub(
+                places_type = 'text_search', 
+                query = query,
+                budget = budget,
+                num_recs = num_recs
+            )
+            if responses:
+                st.write("Your matches:")
+                display_choices(responses)
+            # with first_tab2:
+            #     st.text(prompt)

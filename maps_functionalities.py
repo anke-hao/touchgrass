@@ -28,7 +28,8 @@ def places_hub(places_type, query, budget, num_recs):
         response = service.places().searchText(
         body = request_body,
         # no spaces in the fields parameter!!!
-        fields = 'places.displayName,places.primaryType,places.rating,places.userRatingCount,places.priceLevel'
+        fields = 'places.displayName,places.primaryType,places.rating,' \
+            'places.userRatingCount,places.priceLevel,places.generativeSummary.overview'
         ).execute()
         
     elif places_type == 'nearby_search':
@@ -36,7 +37,8 @@ def places_hub(places_type, query, budget, num_recs):
         
     return response['places']
         
-        
+# https://developers.google.com/maps/documentation/places/web-service/experimental/places-generative
+
 def text_search(query, budget, num_recs, latitude, longitude):
     request_body = {
         'textQuery': query,

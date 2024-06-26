@@ -2,4 +2,5 @@
 /.venv
 /token_files
 *.env
+*.json
 /__pycache__

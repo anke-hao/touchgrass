@@ -59,10 +59,8 @@ def llm_function(model: GenerativeModel,
     for response in responses:
         try:
             st.markdown(response.text)
-            # print(response)
             final_response.append(response.text)
         except IndexError:
-            # st.write(response)
             final_response.append("")
             continue
     return " ".join(final_response)
@@ -77,37 +75,33 @@ def construct_query(cuisine, vibe):
 def get_place(place_id, place_name):
     st.session_state.place = place_id
     st.session_state.place_name = place_name
+    st.session_state.place_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
+    if 'messages' in st.session_state:
+        del st.session_state['messages']
     print(st.session_state.place)
+    print(st.session_state)
 
     
 def display_choices(responses):
     cols = st.columns(len(responses))
-    # buttons = []
     for i, col in enumerate(cols):
         with col:
             response = responses[i]
             st.write(f"**{response['displayName']['text']}**")
-            # st.divider()
             st.write(f"Rating: {response['rating']} ({response['userRatingCount']} reviews)")
-            # st.write(f"Number of Reviews: {response['userRatingCount']}")
             if 'generativeSummary' in response:
                 st.write(f"About: {response['generativeSummary']['overview']['text']}")
             else:
                 st.write("Haven't got a summary for this one. Must be good though!")
-            # print("HEREEEEEEEEEE")
-            # print(response['id'])
             st.button("Learn More", key=response['name'], on_click=get_place, args=(response['name'], response['displayName']['text']))
-            # buttons.append(st.button("Learn More", key=response['displayName']['text']))
-            # if stateful_button("Learn More", key=response['name']):
-            #     get_place(response['name'])
+
 
 # input: json of restaurant details
 def restaurant_qa(query):
-    food_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
-    place_name = food_details['displayName']['text']
+    # food_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
     prompt = f"""You are a helpful local guide who knows the best food in the area. \n
-    You must answer questions about {place_name} as accurately as possible, given 
-    the user query {query} and the following JSON of details: {food_details}
+    You must answer questions about {st.session_state.place_name} as accurately as possible, given 
+    the user query {query} and the following JSON of details: {st.session_state.place_details}
     """
     config = {
         "temperature": 0.8,
@@ -116,16 +110,7 @@ def restaurant_qa(query):
     model_flash = load_models()
     if "messages" not in st.session_state:
         st.session_state.messages = [{"role": "system", "content": prompt}]
-        # st.session_state.messages.append({
-        #         "role":"assistant",
-        #         "content":f"Ask me anything about {food_details['displayName']['text']}"
-        #     }
-        # )
-        # for message in st.session_state.messages:
-        #     if message["role"] != 'system':
-        #         with st.chat_message(message["role"]):
-        #             st.markdown(message["content"])
-    # if query := st.chat_input(f"Ask me anything about ", key='user_chat'):                
+            
     st.session_state.messages.append({"role": "user", "content": query})
     with st.chat_message("user"):
         st.markdown(query)
@@ -136,45 +121,19 @@ def restaurant_qa(query):
                     prompt,
                     generation_config=config,
                 )
-        # st.markdown(response)
     
     st.session_state.messages.append({"role": "assistant", "content": response})
-    # response = model.generate_content(prompt)
-    # # Displaying the Assistant Message
-    # with st.chat_message("assistant"):
-    #     st.markdown(response.text)
-
-    # # Storing the User Message
-    # st.session_state.messages.append(
-    #     {
-    #         "role":"user",
-    #         "content": query
-    #     }
-    # )
-
-    # # Storing the User Message
-    # st.session_state.messages.append(
-    #     {
-    #         "role":"assistant",
-    #         "content": response.text
-    #     }
-    # )
 
 
-if 'responses' not in st.session_state:
-    st.session_state.responses = False
+if 'food_options' not in st.session_state:
+    st.session_state.food_options = False
     
 if 'place' not in st.session_state:
     st.session_state.place = False
     
             
 st.header("touchgrass", divider="rainbow")
-# tab1, tab2 = st.tabs(
-#     ["Find Food", "Chat about a Place"]
-# )
 
-# with tab1:
-    # st.write("Using Gemini 1.5 Flash")
 st.subheader("Find Food")
 
 query = st.text_input(
@@ -200,89 +159,19 @@ num_recs = st.slider(
 
 generate_t2t = st.button("Find my Food", key="generate_t2t")
 if generate_t2t:
-    # st.write(prompt)
     with st.spinner("Generating delicious matches ..."):
-        # search, chat = st.tabs(["Search", "Chat"])
-        # with search:
-            # response = get_gemini_pro_text_response(
-            #     text_model_pro,
-            #     prompt,
-            #     generation_config=config,
-            # )
-        st.session_state.responses = maps_functionalities.places_hub(
+        st.session_state.food_options = maps_functionalities.places_hub(
             places_type = 'text_search', 
             query = query,
             budget = budget,
             num_recs = num_recs
         )
-if st.session_state.responses:
+if st.session_state.food_options:
     st.header("Your matches:")
-    display_choices(st.session_state.responses) 
+    display_choices(st.session_state.food_options) 
     
 if st.session_state.place:
-    # model = GenerativeModel("gemini-1.5-flash")
-    # food_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
-    # if "messages" not in st.session_state:
-    #     st.session_state.messages = [
-    #         {
-    #             "role":"assistant",
-    #             "content":f"Ask me anything about {food_details['displayName']['text']}"
-    #         }
-    #     ]
-    #     for message in st.session_state.messages:
-    #         if message["role"] != 'system':
-    #             with st.chat_message(message["role"]):
-    #                 st.markdown(message["content"])
-
-    # Display chat messages from history on app rerun
     # Accept user input
     if query := st.chat_input(f"Ask me anything about {st.session_state.place_name}", key='user_chat'):
         restaurant_qa(query)
-        # st.session_state.messages.append({"role": "user", "content": prompt})
-        # with st.chat_message("user"):
-        #     st.markdown(prompt)
-
-        # with st.chat_message("assistant"):
-        #     response = model.generate_content(prompt)
-        #     st.markdown(response.text)
         
-        # st.session_state.messages.append({"role": "assistant", "content": response})
-        
-               
-# with tab2:
-#     # client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-#     # if "openai_model" not in st.session_state:
-#     #     st.session_state["openai_model"] = "gpt-4o"
-#     model = GenerativeModel("gemini-1.5-flash")
-#     if "messages" not in st.session_state:
-#         st.session_state.messages = [
-#             {
-#                 "role":"assistant",
-#                 "content":"Ask me Anything"
-#             }
-#         ]
-
-#     # Display chat messages from history on app rerun
-#     for message in st.session_state.messages:
-#         with st.chat_message(message["role"]):
-#             st.markdown(message["content"])
-#     # Accept user input
-#     if prompt := st.chat_input("What is up?"):
-#         st.session_state.messages.append({"role": "user", "content": prompt})
-#         with st.chat_message("user"):
-#             st.markdown(prompt)
-
-#         with st.chat_message("assistant"):
-#             # stream = client.chat.completions.create(
-#             #     model=st.session_state["openai_model"],
-#             #     messages=[
-#             #         {"role": m["role"], "content": m["content"]}
-#             #         for m in st.session_state.messages
-#             #     ],
-#             #     stream=True,
-#             # )
-#             # response = st.write_stream(stream)
-#             response = model.generate_content(prompt)
-#             st.markdown(response.text)
-        
-#         st.session_state.messages.append({"role": "assistant", "content": response})

@@ -14,7 +14,7 @@ https://youtu.be/PpdN8AWONwA
 ## V2
 
 ### Demo:
-TBA
+https://youtu.be/Rflkb8SAG3c
 
 ### Features:
 - Geolocation

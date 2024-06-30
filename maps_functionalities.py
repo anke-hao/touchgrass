@@ -1,13 +1,31 @@
 import pandas as pd # pip install pandas
 from google_apis import create_service
 import geocoder
-import touchgrass
 import os
 import requests
 from dotenv import load_dotenv
 load_dotenv()
 maps_key = os.getenv('GOOGLE_MAPS_API')
 
+
+
+def construct_budget(budget):
+    price_dict = {'casual': 'PRICE_LEVEL_INEXPENSIVE', 
+                  'mid-range': 'PRICE_LEVEL_MODERATE', 
+                  'fine dining': ['PRICE_LEVEL_EXPENSIVE', 
+                                  'PRICE_LEVEL_VERY_EXPENSIVE']
+                }
+    return price_dict[budget]
+
+
+def get_food_type(cuisine):
+    if cuisine != "cafe":
+        mod_cuisine = cuisine.replace(' ', '_')
+        return [f'{mod_cuisine}_restaurant', 'restaurant']
+    else:
+        return ["cafe"]
+    
+    
 # query is defined as:
 # for text_search: the text query that the user inputted
 # for nearby_search: pending
@@ -32,7 +50,7 @@ def places_hub(places_type, query, budget, num_recs):
         response = service.places().searchText(
         body = request_body,
         # no spaces in the fields parameter!!!
-        fields = 'places.name,places.displayName,places.primaryType,places.rating,' \
+        fields = 'places.id,places.displayName,places.primaryType,places.rating,' \
             'places.userRatingCount,places.priceLevel,places.generativeSummary.overview'
         ).execute()
         
@@ -64,14 +82,14 @@ def text_search(query, budget, num_recs, latitude, longitude):
             }
         },
         'rankPreference': 'RELEVANCE',
-        'priceLevels': touchgrass.construct_budget(budget),
+        'priceLevels': construct_budget(budget),
     }
     return request_body
 
 
 def nearby_search(query, budget, num_recs, latitude, longitude):
     request_body = {
-        'includedTypes': touchgrass.get_food_type(query),
+        'includedTypes': get_food_type(query),
         'maxResultCount': num_recs,
         'locationRestriction': {
             'circle': {

@@ -5,6 +5,7 @@ import vertexai
 import json
 import maps_functionalities
 from google.maps import places_v1
+from openai import OpenAI
 from vertexai.generative_models import (
     GenerationConfig,
     GenerativeModel,
@@ -40,31 +41,31 @@ def load_models():
 #     generation_config: GenerationConfig,
 #     stream: bool = False,
 # ):
-#     # safety_settings = {
-#     #     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#     #     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#     #     HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#     #     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#     # }
-#     # # response = model.generate_content(query)
+#     safety_settings = {
+#         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+#         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+#         HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+#         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+#     }
+#     # response = model.generate_content(query)
     
-#     # responses = model.generate_content(
-#     # prompt,
-#     # generation_config=generation_config,
-#     # safety_settings=safety_settings,
-#     # stream=stream,
-#     # )
+#     responses = model.generate_content(
+#     prompt,
+#     generation_config=generation_config,
+#     safety_settings=safety_settings,
+#     stream=stream,
+#     )
 
-#     # final_response = []
-#     # for response in responses:
-#     #     try:
-#     #         # st.write(response.text)
-#     #         final_response.append(response.text)
-#     #     except IndexError:
-#     #         # st.write(response)
-#     #         final_response.append("")
-#     #         continue
-#     # return " ".join(final_response)
+#     final_response = []
+#     for response in responses:
+#         try:
+#             # st.write(response.text)
+#             final_response.append(response.text)
+#         except IndexError:
+#             # st.write(response)
+#             final_response.append("")
+#             continue
+#     return " ".join(final_response)
 #     response = model.generate_content(prompt)
 #     # Displaying the Assistant Message
 #     with st.chat_message("assistant"):
@@ -85,60 +86,37 @@ def load_models():
 #             "content": response.text
 #         }
 #     )
-    
-# def get_gemini_pro_text_response(
-#     model: GenerativeModel,
-#     contents: str,
-#     generation_config: GenerationConfig,
-#     stream: bool = True,
-# ):
-#     safety_settings = {
-#         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#         HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#     }
-
-#     responses = model.generate_content(
-#         prompt,
-#         generation_config=generation_config,
-#         safety_settings=safety_settings,
-#         stream=stream,
-#     )
-
-#     final_response = []
-#     for response in responses:
-#         try:
-#             # st.write(response.text)
-#             final_response.append(response.text)
-#         except IndexError:
-#             # st.write(response)
-#             final_response.append("")
-#             continue
-#     return " ".join(final_response)
 
 
 #  may or may not use this
 def construct_query(cuisine, vibe):
     return f'{vibe} {cuisine}' + ('restaurant' if cuisine != "cafe" else '')
     
-def construct_budget(budget):
-    price_dict = {'casual': 'PRICE_LEVEL_INEXPENSIVE', 
-                  'mid-range': 'PRICE_LEVEL_MODERATE', 
-                  'fine dining': ['PRICE_LEVEL_EXPENSIVE', 
-                                  'PRICE_LEVEL_VERY_EXPENSIVE']
-                }
-    return price_dict[budget]
 
-def get_food_type(cuisine):
-    if cuisine != "cafe":
-        mod_cuisine = cuisine.replace(' ', '_')
-        return [f'{mod_cuisine}_restaurant', 'restaurant']
-    else:
-        return ["cafe"]
-        
+
+
+
+def get_place(place_name: str):
+    st.session_state.place = place_name
+    print(st.session_state.place)
+    
+# def stateful_button(*args, key, **kwargs):
+#     print(f"HEREEEEEEEEEEEE")
+#     print(**kwargs)
+#     if key is None:
+#         raise ValueError("Must pass key")
+
+#     if key not in st.session_state:
+#         st.session_state[key] = False
+    
+#     if st.button(*args, key):
+#         st.session_state[key] = not st.session_state[key]
+
+#     return st.session_state[key]
+    
 def display_choices(responses):
     cols = st.columns(len(responses))
+    # buttons = []
     for i, col in enumerate(cols):
         with col:
             response = responses[i]
@@ -150,6 +128,12 @@ def display_choices(responses):
                 st.write(f"About: {response['generativeSummary']['overview']['text']}")
             else:
                 st.write("Haven't got a summary for this one. Must be good though!")
+            # print("HEREEEEEEEEEE")
+            # print(response['id'])
+            st.button("Learn More", key=response['id'], on_click=get_place, args=(response['id'],))
+            # buttons.append(st.button("Learn More", key=response['displayName']['text']))
+            # if stateful_button("Learn More", key=response['name']):
+            #     get_place(response['name'])
 
 # input: json of restaurant details
 def restaurant_qa(place_id):
@@ -168,11 +152,18 @@ def restaurant_qa(place_id):
     #                 prompt,
     #                 generation_config=config,
     #             )
-        
-st.header("touchgrass", divider="rainbow")
 
-tab1, tab2, tab3 = st.tabs(
-    ["Find Food", "Go Sightseeing", "Find Events"]
+
+if 'responses' not in st.session_state:
+    st.session_state.responses = False
+    
+if 'place' not in st.session_state:
+    st.session_state.place = False
+    
+            
+st.header("touchgrass", divider="rainbow")
+tab1, tab2 = st.tabs(
+    ["Find Food", "Chat about a Place"]
 )
 
 with tab1:
@@ -180,7 +171,7 @@ with tab1:
     st.subheader("Find Food")
 
     query = st.text_input(
-        "What kind of food are you in the mood for? \n\n", key="food_query", value="japanese"
+        "What kind of food are you in the mood for? \n\n", value="japanese"
     )
     budget = st.radio(
         "What's your budget? \n\n",
@@ -211,43 +202,77 @@ with tab1:
                 #     prompt,
                 #     generation_config=config,
                 # )
-            responses = maps_functionalities.places_hub(
+            st.session_state.responses = maps_functionalities.places_hub(
                 places_type = 'text_search', 
                 query = query,
                 budget = budget,
                 num_recs = num_recs
             )
-            if responses:
-                st.header("Your matches:")
-                display_choices(responses)
-            # with chat:
-            #     st.write('hello')
-                # if "messages" not in st.session_state:
-                #     st.session_state.messages = [
-                #         {
-                #             "role":"assistant",
-                #             "content":"Ask me Anything"
-                #         }
-                #     ]
+    if st.session_state.responses:
+        st.header("Your matches:")
+        display_choices(st.session_state.responses) 
+        
+    if st.session_state.place:
+        model = GenerativeModel("gemini-1.5-flash")
+        if "messages" not in st.session_state:
+            st.session_state.messages = [
+                {
+                    "role":"assistant",
+                    "content":"Ask me Anything"
+                }
+            ]
 
-                # # Display chat messages from history on app rerun
-                # for message in st.session_state.messages:
-                #     with st.chat_message(message["role"]):
-                #         st.markdown(message["content"])
-                # # Accept user input
-                # if prompt := st.chat_input("What is up?"):
-                #     st.session_state.messages.append({"role": "user", "content": prompt})
-                #     with st.chat_message("user"):
-                #         st.markdown(prompt)
+        # Display chat messages from history on app rerun
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        # Accept user input
+        if prompt := st.chat_input("What is up?", key='user_chat'):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
 
-                #     with st.chat_message("assistant"):
-                #         stream = client.chat.completions.create(
-                #             model=st.session_state["openai_model"],
-                #             messages=[
-                #                 {"role": m["role"], "content": m["content"]}
-                #                 for m in st.session_state.messages
-                #             ],
-                #             stream=True,
-                #         )
-                #         response = st.write_stream(stream)
-                #     st.session_state.messages.append({"role": "assistant", "content": response})
+            with st.chat_message("assistant"):
+                response = model.generate_content(prompt)
+                st.markdown(response.text)
+            
+            st.session_state.messages.append({"role": "assistant", "content": response})
+        
+               
+with tab2:
+    # client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+    # if "openai_model" not in st.session_state:
+    #     st.session_state["openai_model"] = "gpt-4o"
+    model = GenerativeModel("gemini-1.5-flash")
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {
+                "role":"assistant",
+                "content":"Ask me Anything"
+            }
+        ]
+
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    # Accept user input
+    if prompt := st.chat_input("What is up?"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            # stream = client.chat.completions.create(
+            #     model=st.session_state["openai_model"],
+            #     messages=[
+            #         {"role": m["role"], "content": m["content"]}
+            #         for m in st.session_state.messages
+            #     ],
+            #     stream=True,
+            # )
+            # response = st.write_stream(stream)
+            response = model.generate_content(prompt)
+            st.markdown(response.text)
+        
+        st.session_state.messages.append({"role": "assistant", "content": response})

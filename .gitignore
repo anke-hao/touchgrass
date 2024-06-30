@@ -3,4 +3,7 @@
 /token_files
 *.env
 *.json
+/.streamlit
 /__pycache__
+private_testing.py
+test.ipynb

@@ -8,6 +8,10 @@ from dotenv import load_dotenv
 load_dotenv()
 maps_key = os.getenv('GOOGLE_MAPS_API')
 
+# query is defined as:
+# for text_search: the text query that the user inputted
+# for nearby_search: pending
+# for place_details: the place_id for the specific place that the user is querying
 
 def places_hub(places_type, query, budget, num_recs):
     client_secret_file = 'secrets\client_secret_desktop.json'
@@ -24,21 +28,28 @@ def places_hub(places_type, query, budget, num_recs):
         print(e)
     
     if places_type == 'text_search':
-        request_body = text_search(query, budget, num_recs, latitude, longitude )
+        request_body = text_search(query, budget, num_recs, latitude, longitude)
         response = service.places().searchText(
         body = request_body,
         # no spaces in the fields parameter!!!
-        fields = 'places.displayName,places.primaryType,places.rating,' \
+        fields = 'places.name,places.displayName,places.primaryType,places.rating,' \
             'places.userRatingCount,places.priceLevel,places.generativeSummary.overview'
         ).execute()
         
     elif places_type == 'nearby_search':
         request_body = 'pending'
+    
+    elif places_type == 'place_details':
+        response = service.places().get(
+            name = query,
+            fields = '*'
+        ).execute()
         
     return response['places']
         
 # https://developers.google.com/maps/documentation/places/web-service/experimental/places-generative
 
+    
 def text_search(query, budget, num_recs, latitude, longitude):
     request_body = {
         'textQuery': query,
@@ -91,8 +102,3 @@ def get_maps_coordinates():
     coordinates = requests.post(url).json()
     # return a tuple with latitude and longitude
     return (coordinates['location']['lat'], coordinates['location']['lng'])
-
-
-
-# df = pd.json_normalize(places_list)
-# df.to_csv('places_results.csv', index=False)

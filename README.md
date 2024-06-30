@@ -20,5 +20,5 @@ TBA
 - Geolocation
 - Places (new) API functionality
   - text search
-  - nearby search
-- Misc quality of life functionality for parsing user input and feeding into Places API
+  - place details
+- chatbot functionality with Gemini 1.5 Flash

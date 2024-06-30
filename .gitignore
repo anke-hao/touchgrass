@@ -6,4 +6,4 @@
 /.streamlit
 /__pycache__
 private_testing.py
-test.ipynb
+*.ipynb

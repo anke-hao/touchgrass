@@ -1,4 +1,5 @@
 streamlit
 google-cloud-aiplatform
 google-cloud-logging
-git+https://github.com/googleapis/google-auth-library-python-httplib2
+google-auth-httplib2 
+google-auth-oauthlib

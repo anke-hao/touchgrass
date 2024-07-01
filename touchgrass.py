@@ -12,6 +12,7 @@ from vertexai.generative_models import (
     HarmBlockThreshold,
     HarmCategory,
     Part,
+    Content,
 )
 
 credential_path = r'C:\Users\anke_\AppData\Roaming\gcloud\application_default_credentials.json'
@@ -23,64 +24,96 @@ LOCATION = "us-central1"  # Your Google Cloud Project Region
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 
-@st.cache_resource
-def load_models():
+# @st.cache_resource
+def load_model():
     """
     Load the generative models for text and multimodal generation.
 
     Returns:
         Tuple: A tuple containing the text model and multimodal model.
     """
-    model_flash = GenerativeModel("gemini-1.5-flash")
-    return model_flash
-
-
-# # Process and store Query and Response
-def llm_function(model: GenerativeModel,
-    prompt: str,
-    generation_config: GenerationConfig,
-    stream: bool = True,
-):
+    config = {
+        "temperature": 0.8,
+        "max_output_tokens": 2048,
+    }
     safety_settings = {
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
         HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     }
+    system_instruction = f"""You are a helpful local guide who knows the best food in the area. \n
+    You must answer questions about {st.session_state.place_name} as accurately as possible, given 
+    the user query {query} and the following JSON of details: {st.session_state.place_details}
+    """
+    print(system_instruction)
+    model_flash = GenerativeModel(
+        model_name = "gemini-1.5-flash",
+        generation_config=config,
+        safety_settings=safety_settings,
+        system_instruction=system_instruction,
+        )
+    return model_flash
+
+
+# # Process and store Query and Response
+# def llm_function(model: GenerativeModel,
+#     prompt: str,
+#     generation_config: GenerationConfig,
+#     stream: bool = True,
+# ):
+#     safety_settings = {
+#         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+#         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+#         HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+#         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+#     }
     
-    responses = model.generate_content(
-    prompt,
-    generation_config=generation_config,
-    safety_settings=safety_settings,
-    stream=stream,
-    )
+#     responses = model.generate_content(
+#     prompt,
+#     generation_config=generation_config,
+#     safety_settings=safety_settings,
+#     stream=stream,
+#     )
 
-    final_response = []
-    for response in responses:
-        try:
-            st.markdown(response.text)
-            final_response.append(response.text)
-        except IndexError:
-            final_response.append("")
-            continue
-    return " ".join(final_response)
+#     final_response = []
+#     for response in responses:
+#         try:
+#             st.markdown(response.text)
+#             final_response.append(response.text)
+#         except IndexError:
+#             final_response.append("")
+#             continue
+#     return " ".join(final_response)
 
+def stream_data():
+    stream = st.session_state.chat.send_message(query, stream=True)
+    for part in stream:
+        yield part.text
+        
+def get_llm_response(query):
+    response = st.write_stream(stream_data())
+    # print(response.text)
+    return response
 
-
-#  may or may not use this
-def construct_query(cuisine, vibe):
-    return f'{vibe} {cuisine}' + ('restaurant' if cuisine != "cafe" else '')
-    
 
 def get_place(place_id, place_name):
     st.session_state.place = place_id
     st.session_state.place_name = place_name
     st.session_state.place_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
-    if 'messages' in st.session_state:
-        del st.session_state['messages']
-    print(st.session_state.place)
-    print(st.session_state)
+    st.session_state.messages = []
+    print(st.session_state.place_name)
+    restaurant_start_chat()
+    
 
+def restaurant_start_chat():
+    st.session_state.model = load_model()
+    # print(type(st.session_state.messages))
+    st.session_state.chat = st.session_state.model.start_chat(
+        history=[],
+    )
+    print("STARTED CHAT")
+    
     
 def display_choices(responses):
     cols = st.columns(len(responses))
@@ -97,30 +130,18 @@ def display_choices(responses):
 
 
 # input: json of restaurant details
-def restaurant_qa(query):
-    # food_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
-    prompt = f"""You are a helpful local guide who knows the best food in the area. \n
-    You must answer questions about {st.session_state.place_name} as accurately as possible, given 
-    the user query {query} and the following JSON of details: {st.session_state.place_details}
-    """
-    config = {
-        "temperature": 0.8,
-        "max_output_tokens": 2048,
-    }
-    model_flash = load_models()
-    if "messages" not in st.session_state:
-        st.session_state.messages = [{"role": "system", "content": prompt}]
-            
+def restaurant_qa(query):            
     st.session_state.messages.append({"role": "user", "content": query})
     with st.chat_message("user"):
         st.markdown(query)
 
     with st.chat_message("assistant"):
-        response = llm_function(
-                    model_flash,
-                    prompt,
-                    generation_config=config,
-                )
+        response = get_llm_response(query)
+        # response = llm_function(
+        #             model_flash,
+        #             prompt,
+        #             generation_config=config,
+        #         )
     
     st.session_state.messages.append({"role": "assistant", "content": response})
 
@@ -154,7 +175,6 @@ num_recs = st.slider(
     1, 5, 3,
     key="num_recs"
 )
-
 
 
 generate_t2t = st.button("Find my Food", key="generate_t2t")

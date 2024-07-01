@@ -1,6 +1,5 @@
 import pandas as pd # pip install pandas
 from google_apis import create_service
-import geocoder
 import os
 import requests
 from dotenv import load_dotenv
@@ -105,15 +104,7 @@ def nearby_search(query, budget, num_recs, latitude, longitude):
     return request_body
     
 
-# try geocoder
-def get_geocoder_coordinates():
-    g = geocoder.ip('me')#this function is used to find the current information using our IP Add
-    if g.latlng is not None: #g.latlng tells if the coordinates are found or not
-        return g.latlng
-    else:
-        return None
-
-# try maps (seems to be slightly more accurate)
+# try maps (seems to be slightly more accurate than geocoder)
 def get_maps_coordinates():
     url = f'https://www.googleapis.com/geolocation/v1/geolocate?key={maps_key}'
 

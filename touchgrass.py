@@ -33,7 +33,7 @@ def load_model():
         Tuple: A tuple containing the text model and multimodal model.
     """
     config = {
-        "temperature": 0.8,
+        "temperature": 0.7,
         "max_output_tokens": 2048,
     }
     safety_settings = {
@@ -44,7 +44,8 @@ def load_model():
     }
     system_instruction = f"""You are a helpful local guide who knows the best food in the area. \n
     You must answer questions about {st.session_state.place_name} as accurately as possible, given 
-    the user query {query} and the following JSON of details: {st.session_state.place_details}
+    the user query {query} and the following JSON of details: \n
+    {st.session_state.place_details}
     """
     print(system_instruction)
     model_flash = GenerativeModel(
@@ -55,45 +56,13 @@ def load_model():
         )
     return model_flash
 
-
-# # Process and store Query and Response
-# def llm_function(model: GenerativeModel,
-#     prompt: str,
-#     generation_config: GenerationConfig,
-#     stream: bool = True,
-# ):
-#     safety_settings = {
-#         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#         HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-#     }
-    
-#     responses = model.generate_content(
-#     prompt,
-#     generation_config=generation_config,
-#     safety_settings=safety_settings,
-#     stream=stream,
-#     )
-
-#     final_response = []
-#     for response in responses:
-#         try:
-#             st.markdown(response.text)
-#             final_response.append(response.text)
-#         except IndexError:
-#             final_response.append("")
-#             continue
-#     return " ".join(final_response)
-
-def stream_data():
+def stream_data(query):
     stream = st.session_state.chat.send_message(query, stream=True)
     for part in stream:
         yield part.text
         
 def get_llm_response(query):
-    response = st.write_stream(stream_data())
-    # print(response.text)
+    response = st.write_stream(stream_data(query))
     return response
 
 
@@ -112,6 +81,7 @@ def restaurant_start_chat():
     st.session_state.chat = st.session_state.model.start_chat(
         history=[],
     )
+    
     print("STARTED CHAT")
     
     
@@ -137,12 +107,6 @@ def restaurant_qa(query):
 
     with st.chat_message("assistant"):
         response = get_llm_response(query)
-        # response = llm_function(
-        #             model_flash,
-        #             prompt,
-        #             generation_config=config,
-        #         )
-    
     st.session_state.messages.append({"role": "assistant", "content": response})
 
 
@@ -187,10 +151,20 @@ if generate_t2t:
             num_recs = num_recs
         )
 if st.session_state.food_options:
-    st.header("Your matches:")
+    st.subheader("Your matches:", divider='gray')
     display_choices(st.session_state.food_options) 
     
 if st.session_state.place:
+    st.subheader(f"Chat about {st.session_state.place_name}", divider='gray')
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    if st.session_state.messages == []:
+        starter_prompt = f"""Give the user a friendly introduction to {st.session_state.place_name}.\n
+        Make sure to let them know they can ask you about the hours, price range, or any other details."""
+        with st.chat_message("assistant"):
+            st.session_state.messages.append({"role": "assistant", "content": get_llm_response(starter_prompt)})
+        
     # Accept user input
     if query := st.chat_input(f"Ask me anything about {st.session_state.place_name}", key='user_chat'):
         restaurant_qa(query)

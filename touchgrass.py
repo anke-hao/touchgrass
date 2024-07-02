@@ -1,11 +1,11 @@
-import os
-import requests
+# import os
+# import requests
 import streamlit as st
 import vertexai
-import json
+# import json
 import maps_functionalities
-from google.maps import places_v1
-from openai import OpenAI
+# from google.maps import places_v1
+# from openai import OpenAI
 from vertexai.generative_models import (
     GenerationConfig,
     GenerativeModel,

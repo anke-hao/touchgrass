@@ -1,7 +1,7 @@
-import pandas as pd # pip install pandas
+# import pandas as pd # pip install pandas
 from google_apis import create_service
 import streamlit as st
-import os
+# import os
 import requests
 # from dotenv import load_dotenv
 # load_dotenv()

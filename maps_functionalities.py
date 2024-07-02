@@ -126,22 +126,23 @@ def text_search_new(query, budget, num_recs):
 
 
 def get_place_details(name):
-    url = 'https://places.googleapis.com/v1'
+    response = requests.get(f"https://places.googleapis.com/v1/{name}?fields=*&key={st.secrets['GOOGLE_MAPS_API']}")
+    # url = 'https://places.googleapis.com/v1/places:placeDetails'
 
-    # Define the headers
-    headers = {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': st.secrets["GOOGLE_MAPS_API"],  # Replace 'API_KEY' with your actual Google Places API key
-        'X-Goog-FieldMask': '*'
-    }
+    # # Define the headers
+    # headers = {
+    #     'Content-Type': 'application/json',
+    #     'X-Goog-Api-Key': st.secrets["GOOGLE_MAPS_API"],  # Replace 'API_KEY' with your actual Google Places API key
+    #     'X-Goog-FieldMask': '*'
+    # }
 
-    request_body = {
-        'name': name,
-    }
+    # request_body = {
+    #     'name': name,
+    # }
     
-    response = requests.post(url, headers=headers, json=request_body)
-    print(response)
-    return response
+    # response = requests.post(url, headers=headers, json=request_body)
+    # print(response)
+    return response.json()
 
 def nearby_search(query, budget, num_recs, latitude, longitude):
     request_body = {

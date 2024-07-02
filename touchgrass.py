@@ -12,39 +12,12 @@ from vertexai.generative_models import (
     HarmBlockThreshold,
     HarmCategory,
 )
+import google.generativeai as genai
 
 from google.oauth2 import service_account
 from google.cloud import storage
 
-def generate_signed_url_v4(bucket_name, blob_name):
-    """Generates a v4 signed URL for downloading a blob.
 
-    Note that this method requires a service account key file. You can not use
-    this if you are using Application Default Credentials from Google Compute
-    Engine or from the Google Cloud SDK.
-    """
-    credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
-    )
-
-    storage_client = storage.Client(credentials=credentials)
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-
-    url = blob.generate_signed_url(
-        version="v4",
-        expiration=datetime.timedelta(minutes=15),
-        # Allow GET requests using this URL.
-        method="GET",
-    )
-
-    print("Generated GET signed URL:")
-    print(url)
-
-    return url
-
-bucket_name = "storage-touchgrass-secrets"
-blob_name = "application_default_credentials.json"
 # url = generate_signed_url_v4(bucket_name, blob_name)
 # conn = st.connection('gcs', type=FilesConnection)
 # credential_path = r'C:\Users\anke_\AppData\Roaming\gcloud\application_default_credentials.json'
@@ -57,7 +30,9 @@ LOCATION = "us-central1"  # Your Google Cloud Project Region
 # fs = gcsfs.GCSFileSystem(project=PROJECT_ID)
 # fs.ls(bucket_name)
 
-vertexai.init(project=PROJECT_ID, location=LOCATION)
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+
+# vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 
 # @st.cache_resource
@@ -84,10 +59,10 @@ def load_model():
     {st.session_state.place_details}
     """
     print(system_instruction)
-    model_flash = GenerativeModel(
+    model_flash = genai.GenerativeModel(
         model_name = "gemini-1.5-flash",
         generation_config=config,
-        safety_settings=safety_settings,
+        # safety_settings=safety_settings,
         system_instruction=system_instruction,
         )
     return model_flash

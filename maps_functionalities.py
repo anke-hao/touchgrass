@@ -34,15 +34,17 @@ def get_food_type(cuisine):
 
 # https://developers.google.com/maps/documentation/places/web-service/experimental/places-generative
 
-    
+
 
 def text_search_new(query, budget, num_recs):
-    coordinates = get_maps_coordinates()
-    try:
-        assert coordinates is not None, "coordinates weren't retrieved"
-        latitude, longitude = coordinates
-    except Exception as e:
-        print(e)
+    # coordinates = get_maps_coordinates()
+    # try:
+    #     assert coordinates is not None, "coordinates weren't retrieved"
+    #     latitude, longitude = coordinates
+    # except Exception as e:
+    #     print(e)
+    temp_lat = 37.7614
+    temp_lng = -122.3890
     url = 'https://places.googleapis.com/v1/places:searchText'
 
     # Define the headers
@@ -61,8 +63,8 @@ def text_search_new(query, budget, num_recs):
         'locationBias': {
             'circle': {
                 'center': {
-                    'latitude': latitude,
-                    'longitude': longitude,
+                    'latitude': temp_lat,
+                    'longitude': temp_lng,
                 },
                 'radius': 1000
             }

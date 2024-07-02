@@ -86,6 +86,62 @@ def text_search(query, budget, num_recs, latitude, longitude):
     }
     return request_body
 
+def text_search_new(query, budget, num_recs):
+    coordinates = get_maps_coordinates()
+    try:
+        assert coordinates is not None, "coordinates weren't retrieved"
+        latitude, longitude = coordinates
+    except Exception as e:
+        print(e)
+    url = 'https://places.googleapis.com/v1/places:searchText'
+
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': st.secrets["GOOGLE_MAPS_API"],  # Replace 'API_KEY' with your actual Google Places API key
+        'X-Goog-FieldMask': 'places.name,places.displayName,places.primaryType,places.rating,' \
+            'places.userRatingCount,places.priceLevel,places.generativeSummary.overview'
+    }
+
+    # Define the data payload for the POST request
+    
+    request_body = {
+        'textQuery': query,
+        'maxResultCount': num_recs,
+        'locationBias': {
+            'circle': {
+                'center': {
+                    'latitude': latitude,
+                    'longitude': longitude,
+                },
+                'radius': 1000
+            }
+        },
+        'rankPreference': 'RELEVANCE',
+        'priceLevels': construct_budget(budget),
+    }
+    response = requests.post(url, headers=headers, json=request_body)
+    print(response.json())
+    return response.json()['places']
+
+
+def get_place_details(name):
+    url = 'https://places.googleapis.com/v1'
+
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': st.secrets["GOOGLE_MAPS_API"],  # Replace 'API_KEY' with your actual Google Places API key
+        'X-Goog-FieldMask': '*'
+    }
+
+    request_body = {
+        'name': name,
+    }
+    
+    response = requests.post(url, headers=headers, json=request_body)
+    print(response)
+    return response
 
 def nearby_search(query, budget, num_recs, latitude, longitude):
     request_body = {

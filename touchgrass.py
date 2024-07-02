@@ -1,38 +1,62 @@
-# import os
-# import requests
+import os
+import datetime
 import streamlit as st
+from st_files_connection import FilesConnection
 import vertexai
 # import json
 import maps_functionalities
 # from google.maps import places_v1
 # from openai import OpenAI
 from vertexai.generative_models import (
-    GenerationConfig,
     GenerativeModel,
     HarmBlockThreshold,
     HarmCategory,
-    Part,
-    Content,
 )
 
 from google.oauth2 import service_account
 from google.cloud import storage
 
-# print(st.secrets["OPENAI_API_KEY"])
-# Create API client.
-credentials = service_account.Credentials.from_service_account_info(
+def generate_signed_url_v4(bucket_name, blob_name):
+    """Generates a v4 signed URL for downloading a blob.
+
+    Note that this method requires a service account key file. You can not use
+    this if you are using Application Default Credentials from Google Compute
+    Engine or from the Google Cloud SDK.
+    """
+    credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
-)
+    )
 
-client = storage.Client(credentials=credentials)
+    storage_client = storage.Client(credentials=credentials)
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
 
+    url = blob.generate_signed_url(
+        version="v4",
+        expiration=datetime.timedelta(minutes=15),
+        # Allow GET requests using this URL.
+        method="GET",
+    )
+
+    print("Generated GET signed URL:")
+    print(url)
+
+    return url
+
+bucket_name = "storage-touchgrass-secrets"
+blob_name = "application_default_credentials.json"
+# url = generate_signed_url_v4(bucket_name, blob_name)
+# conn = st.connection('gcs', type=FilesConnection)
 # credential_path = r'C:\Users\anke_\AppData\Roaming\gcloud\application_default_credentials.json'
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credential_path
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = st.secrets["application_default_credentials"]
+
 
 # PROJECT_ID = "celtic-list-427003-c7"  # Your Google Cloud Project ID
 PROJECT_ID = "rosy-hangout-424004-f7"  # Your Google Cloud Project ID
 LOCATION = "us-central1"  # Your Google Cloud Project Region
+# fs = gcsfs.GCSFileSystem(project=PROJECT_ID)
+# fs.ls(bucket_name)
+
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 
@@ -81,7 +105,8 @@ def get_llm_response(query):
 def get_place(place_id, place_name):
     st.session_state.place = place_id
     st.session_state.place_name = place_name
-    st.session_state.place_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
+    # st.session_state.place_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
+    st.session_state.place_details = maps_functionalities.get_place_details(st.session_state.place)
     st.session_state.messages = []
     print(st.session_state.place_name)
     restaurant_start_chat()
@@ -156,8 +181,13 @@ num_recs = st.slider(
 generate_t2t = st.button("Find my Food", key="generate_t2t")
 if generate_t2t:
     with st.spinner("Generating delicious matches ..."):
-        st.session_state.food_options = maps_functionalities.places_hub(
-            places_type = 'text_search', 
+        # st.session_state.food_options = maps_functionalities.places_hub(
+        #     places_type = 'text_search', 
+        #     query = query,
+        #     budget = budget,
+        #     num_recs = num_recs
+        # )
+        st.session_state.food_options = maps_functionalities.text_search_new(
             query = query,
             budget = budget,
             num_recs = num_recs

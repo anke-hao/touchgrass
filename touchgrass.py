@@ -15,8 +15,19 @@ from vertexai.generative_models import (
     Content,
 )
 
-credential_path = r'C:\Users\anke_\AppData\Roaming\gcloud\application_default_credentials.json'
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credential_path
+from google.oauth2 import service_account
+from google.cloud import storage
+
+# print(st.secrets["OPENAI_API_KEY"])
+# Create API client.
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
+
+client = storage.Client(credentials=credentials)
+
+# credential_path = r'C:\Users\anke_\AppData\Roaming\gcloud\application_default_credentials.json'
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credential_path
 
 # PROJECT_ID = "celtic-list-427003-c7"  # Your Google Cloud Project ID
 PROJECT_ID = "rosy-hangout-424004-f7"  # Your Google Cloud Project ID

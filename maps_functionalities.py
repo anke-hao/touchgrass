@@ -1,11 +1,12 @@
 import pandas as pd # pip install pandas
 from google_apis import create_service
+import streamlit as st
 import os
 import requests
-from dotenv import load_dotenv
-load_dotenv()
-maps_key = os.getenv('GOOGLE_MAPS_API')
-
+# from dotenv import load_dotenv
+# load_dotenv()
+# maps_key = os.getenv('GOOGLE_MAPS_API')
+maps_key = st.secrets["GOOGLE_MAPS_API"]
 
 
 def construct_budget(budget):

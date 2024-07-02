@@ -28,6 +28,7 @@ client = storage.Client(credentials=credentials)
 
 # credential_path = r'C:\Users\anke_\AppData\Roaming\gcloud\application_default_credentials.json'
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credential_path
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials
 
 # PROJECT_ID = "celtic-list-427003-c7"  # Your Google Cloud Project ID
 PROJECT_ID = "rosy-hangout-424004-f7"  # Your Google Cloud Project ID

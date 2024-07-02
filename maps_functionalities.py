@@ -1,13 +1,13 @@
 # import pandas as pd # pip install pandas
 from google_apis import create_service
 import streamlit as st
+
 # import os
 import requests
 # from dotenv import load_dotenv
 # load_dotenv()
 # maps_key = os.getenv('GOOGLE_MAPS_API')
 maps_key = st.secrets["GOOGLE_MAPS_API"]
-print(len(maps_key))
 
 def construct_budget(budget):
     price_dict = {'casual': 'PRICE_LEVEL_INEXPENSIVE', 
@@ -34,17 +34,25 @@ def get_food_type(cuisine):
 
 # https://developers.google.com/maps/documentation/places/web-service/experimental/places-generative
 
+def autocomplete():
+    response = requests.get(f"https://places.googleapis.com/v1/{name}?fields=*&key={st.secrets['GOOGLE_MAPS_API']}")
 
-
-def text_search_new(query, budget, num_recs):
+def text_search_new(query, budget, num_recs, coordinates):
     # coordinates = get_maps_coordinates()
     # try:
     #     assert coordinates is not None, "coordinates weren't retrieved"
     #     latitude, longitude = coordinates
     # except Exception as e:
     #     print(e)
-    temp_lat = 37.7614
-    temp_lng = -122.3890
+    # coordinates = streamlit_js_eval.get_geolocation()
+    try:
+        lat = coordinates['coords']['latitude']
+        lng = coordinates['coords']['longitude']
+        print(lat)
+    except Exception as e:
+        print(e)
+    # temp_lat = 37.7614
+    # temp_lng = -122.3890
     url = 'https://places.googleapis.com/v1/places:searchText'
 
     # Define the headers
@@ -63,8 +71,8 @@ def text_search_new(query, budget, num_recs):
         'locationBias': {
             'circle': {
                 'center': {
-                    'latitude': temp_lat,
-                    'longitude': temp_lng,
+                    'latitude': lat,
+                    'longitude': lng,
                 },
                 'radius': 1000
             }

@@ -1,5 +1,6 @@
 import os
 import datetime
+import streamlit_js_eval
 import streamlit as st
 from st_files_connection import FilesConnection
 import vertexai
@@ -34,6 +35,8 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 # vertexai.init(project=PROJECT_ID, location=LOCATION)
 
+coordinates = streamlit_js_eval.get_geolocation()
+print(coordinates)
 
 # @st.cache_resource
 def load_model():
@@ -132,40 +135,34 @@ if 'place' not in st.session_state:
 st.header("touchgrass", divider="rainbow")
 
 st.subheader("Find Food")
+with st.form("my-form"):
+    query = st.text_input(
+        "What kind of food are you in the mood for? \n\n", placeholder="e.g. sushi, tacos, burgers"
+    )
+    budget = st.radio(
+        "What's your budget? \n\n",
+        [
+            "casual",
+            "mid-range",
+            "fine dining",
+        ],
+        key="budget",
+    )
 
-query = st.text_input(
-    "What kind of food are you in the mood for? \n\n", value="japanese"
-)
-budget = st.radio(
-    "What's your budget? \n\n",
-    [
-        "casual",
-        "mid-range",
-        "fine dining",
-    ],
-    key="budget",
-)
-
-num_recs = st.slider(
-    "How many recommendations are you looking for? \n\n",
-    1, 5, 3,
-    key="num_recs"
-)
-
-
-generate_t2t = st.button("Find my Food", key="generate_t2t")
-if generate_t2t:
+    num_recs = st.slider(
+        "How many recommendations are you looking for? \n\n",
+        1, 5, 3,
+        key="num_recs"
+    )
+    submit_button = st.form_submit_button("Find my Food")
+    
+if submit_button:
     with st.spinner("Generating delicious matches ..."):
-        # st.session_state.food_options = maps_functionalities.places_hub(
-        #     places_type = 'text_search', 
-        #     query = query,
-        #     budget = budget,
-        #     num_recs = num_recs
-        # )
         st.session_state.food_options = maps_functionalities.text_search_new(
             query = query,
             budget = budget,
-            num_recs = num_recs
+            num_recs = num_recs,
+            coordinates = coordinates
         )
 if st.session_state.food_options:
     st.subheader("Your matches:", divider='gray')

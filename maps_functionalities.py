@@ -7,7 +7,7 @@ import requests
 # load_dotenv()
 # maps_key = os.getenv('GOOGLE_MAPS_API')
 maps_key = st.secrets["GOOGLE_MAPS_API"]
-print(type(maps_key))
+print(len(maps_key))
 
 def construct_budget(budget):
     price_dict = {'casual': 'PRICE_LEVEL_INEXPENSIVE', 

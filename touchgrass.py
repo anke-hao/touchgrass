@@ -1,4 +1,5 @@
 import streamlit_js_eval
+import time
 import streamlit as st
 from st_files_connection import FilesConnection
 import vertexai
@@ -9,6 +10,8 @@ from vertexai.generative_models import (
     HarmCategory,
 )
 import google.generativeai as genai
+from streamlit_searchbox import st_searchbox
+
 
 
 # PROJECT_ID = "rosy-hangout-424004-f7"  # Your Google Cloud Project ID
@@ -18,9 +21,9 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 # vertexai.init(project=PROJECT_ID, location=LOCATION)
 
-coordinates = streamlit_js_eval.get_geolocation()
+initial_coordinates = streamlit_js_eval.get_geolocation()
 
-st.session_state.disabled = True
+
 
 def load_model():
     """
@@ -89,7 +92,7 @@ def display_choices(responses):
             response = responses[i]
             st.write(f"**{response['displayName']['text']}**")
             st.write(f"Rating: {response['rating']} ({response['userRatingCount']} reviews)")
-            distance = maps_functionalities.get_distance(coordinates, response['name'])
+            distance = maps_functionalities.get_distance(st.session_state.coordinates, response['name'])
             st.write(f"Distance: {distance}")
             st.write("[Take Me to Google Maps](%s)" % response['googleMapsUri'])
             if 'generativeSummary' in response:
@@ -98,6 +101,20 @@ def display_choices(responses):
                 st.write("Haven't got a summary for this one. Must be good though!")
             st.button("Learn More", key=response['name'], on_click=get_place, args=(response['name'], response['displayName']['text']))
 
+
+def display_autocomplete_options(search_term):
+    print("HERE")
+    # st.session_state.place = False
+    # st.session_state.food_options = False
+    if search_term:
+        suggestions = maps_functionalities.autocomplete(search_term)["suggestions"]
+        parsed_suggestions = []
+        for suggestion in suggestions:
+            display_name = suggestion['placePrediction']['text']['text']
+            parsed_suggestions.append(display_name)
+        return parsed_suggestions
+    else:
+        return None
 
 # input: json of restaurant details
 def restaurant_qa(query):            
@@ -109,8 +126,7 @@ def restaurant_qa(query):
         response = get_llm_response(query)
     st.session_state.messages.append({"role": "assistant", "content": response})
 
-def enable_submit_button():
-    st.session_state.disabled = False
+
 
 if 'food_options' not in st.session_state:
     st.session_state.food_options = False
@@ -123,14 +139,52 @@ st.header("touchgrass", divider="rainbow")
 
 st.subheader("Find Food")
 
+# location = st_searchbox(
+#         display_autocomplete_options,
+#         # label = "Optional: where do you want to search around, if not your current location? \n\n",
+#         # placeholder="location to search around",
+        
+#     )
+
+
 # Limitation: Within a form, the only widget that can have a callback function 
 # is st.form_submit_button, which means I'm going the error route instead of simply
 # disabling the button until the text field is filled out
+# Limitation: custom module st_searchbox does not work within a streamlit form
+
+# with st.form("my-form"):
+#     query = st.text_input(
+#         "What kind of food are you in the mood for? \n\n", 
+#         placeholder="e.g. sushi, tacos, burgers",
+#     )
+#     # location = st.selectbox(
+#     #     on_change=display_autocomplete_options,
+#     #     label = "Optional: where do you want to search around, if not your current location? \n\n",
+#     #     placeholder="location to search around",
+#     #     options = display_autocomplete_options,
+#     # )
+#     budget = st.radio(
+#         "What's your budget? \n\n",
+#         [
+#             "casual",
+#             "mid-range",
+#             "fine dining",
+#         ],
+#         key="budget",
+#     )
+
+#     num_recs = st.slider(
+#         "How many recommendations are you looking for? \n\n",
+#         1, 5, 3,
+#         key="num_recs"
+#     )
+#     submit_button = st.form_submit_button("Find my Food")
 with st.form("my-form"):
     query = st.text_input(
         "What kind of food are you in the mood for? \n\n", 
         placeholder="e.g. sushi, tacos, burgers",
     )
+
     budget = st.radio(
         "What's your budget? \n\n",
         [
@@ -146,20 +200,50 @@ with st.form("my-form"):
         1, 5, 3,
         key="num_recs"
     )
-    submit_button = st.form_submit_button("Find my Food")
-        
+    # Limitation: on_change for selectbox is only when you actually click on an 
+    # option and it changes, not if you type in something. Used custom component instead
+    # st.session_state.location = st_searchbox(
+    #         display_autocomplete_options,
+    #         label = "Optional: where do you want to search around, if not your current location? \n\n",
+    #         placeholder="location to search around",
+    # )
 
+    # location = None
+    location = st.text_input(
+        label = "Optional: where do you want to search around, if not your current location? \n\n",
+        placeholder="location to search around",
+    )
+    selections = []
+    final_location = None
+    if location:
+        selections = display_autocomplete_options(location)
+        final_location = st.selectbox(
+            label = "Options \n\n",
+            placeholder="location to search around",
+            options = selections,
+        )
+    submit_button = st.form_submit_button("Find my Food")
+# submit_button = st.button("Find my Food")
+        
+# if query:
+        
 if submit_button and not query:
-    if not query:
-        st.error("Please specify what food you're craving!", icon="🚨")
-        st.stop()
+    st.error("Please specify what food you're craving!", icon="🚨")
+    st.stop()
+
 if submit_button:
     with st.spinner("Generating delicious matches ..."):
+        if final_location: # use the specified location instead of user's current location
+            st.session_state.coordinates = maps_functionalities.geocoder(final_location)
+            print(final_location)
+        elif initial_coordinates: # process and use the user's current location
+            st.session_state.coordinates = {"lat": initial_coordinates['coords']['latitude'], 
+                            "lng": initial_coordinates['coords']['longitude']}
         st.session_state.food_options = maps_functionalities.text_search_new(
             query = query,
             budget = budget,
             num_recs = num_recs,
-            coordinates = coordinates
+            coordinates = st.session_state.coordinates
         )
 if st.session_state.food_options:
     st.subheader("Your matches:", divider='gray')

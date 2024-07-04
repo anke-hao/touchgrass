@@ -6,6 +6,7 @@ import streamlit as st
 import requests
 import googlemaps
 maps_key = st.secrets["GOOGLE_MAPS_API"]
+gmaps = googlemaps.Client(key=maps_key)
 
 def construct_budget(budget):
     price_dict = {'casual': 'PRICE_LEVEL_INEXPENSIVE', 
@@ -27,11 +28,10 @@ def get_food_type(cuisine):
 def get_distance(coordinates, place_id):
     processed_place_id = place_id.replace('places/', 'place_id:')
     try:
-        lat = coordinates['coords']['latitude']
-        lng = coordinates['coords']['longitude']
+        lat = coordinates['lat']
+        lng = coordinates['lng']
     except Exception as e:
         print(e)
-    gmaps = googlemaps.Client(key=maps_key)
     result = gmaps.distance_matrix((lat, lng), processed_place_id, mode = 'driving', units = 'imperial')
     miles = result["rows"][0]["elements"][0]["distance"]["text"]
     return miles
@@ -39,13 +39,31 @@ def get_distance(coordinates, place_id):
 
 # https://developers.google.com/maps/documentation/places/web-service/experimental/places-generative
 
-def autocomplete(name):
-    response = requests.get(f"https://places.googleapis.com/v1/{name}?fields=*&key={st.secrets['GOOGLE_MAPS_API']}")
+def autocomplete(query):
+    # response = requests.get(f"https://places.googleapis.com/v1/{query}?fields=*&key={st.secrets['GOOGLE_MAPS_API']}")
+    url = 'https://places.googleapis.com/v1/places:autocomplete'
 
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': maps_key,  # Replace 'API_KEY' with your actual Google Places API key
+    }
+    
+    request_body = {
+        'input': query,
+    }
+    response = requests.post(url, headers=headers, json=request_body)
+    return response.json()
+
+def geocoder(address):
+    geocode_result = gmaps.geocode(address)
+    return geocode_result[0]["geometry"]["location"]
+    
+    
 def text_search_new(query, budget, num_recs, coordinates):
     try:
-        lat = coordinates['coords']['latitude']
-        lng = coordinates['coords']['longitude']
+        lat = coordinates['lat']
+        lng = coordinates['lng']
         print(lat)
     except Exception as e:
         print(e)

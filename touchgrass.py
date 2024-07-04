@@ -1,13 +1,8 @@
-import os
-import datetime
 import streamlit_js_eval
 import streamlit as st
 from st_files_connection import FilesConnection
 import vertexai
-# import json
 import maps_functionalities
-# from google.maps import places_v1
-# from openai import OpenAI
 from vertexai.generative_models import (
     GenerativeModel,
     HarmBlockThreshold,
@@ -15,30 +10,18 @@ from vertexai.generative_models import (
 )
 import google.generativeai as genai
 
-from google.oauth2 import service_account
-from google.cloud import storage
 
-
-# url = generate_signed_url_v4(bucket_name, blob_name)
-# conn = st.connection('gcs', type=FilesConnection)
-# credential_path = r'C:\Users\anke_\AppData\Roaming\gcloud\application_default_credentials.json'
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = st.secrets["application_default_credentials"]
-
-
-# PROJECT_ID = "celtic-list-427003-c7"  # Your Google Cloud Project ID
-PROJECT_ID = "rosy-hangout-424004-f7"  # Your Google Cloud Project ID
-LOCATION = "us-central1"  # Your Google Cloud Project Region
-# fs = gcsfs.GCSFileSystem(project=PROJECT_ID)
-# fs.ls(bucket_name)
+# PROJECT_ID = "rosy-hangout-424004-f7"  # Your Google Cloud Project ID
+# LOCATION = "us-central1"  # Your Google Cloud Project Region
 
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 # vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 coordinates = streamlit_js_eval.get_geolocation()
-print(coordinates)
 
-# @st.cache_resource
+st.session_state.disabled = True
+
 def load_model():
     """
     Load the generative models for text and multimodal generation.
@@ -92,14 +75,13 @@ def get_place(place_id, place_name):
 
 def restaurant_start_chat():
     st.session_state.model = load_model()
-    # print(type(st.session_state.messages))
     st.session_state.chat = st.session_state.model.start_chat(
         history=[],
     )
     
     print("STARTED CHAT")
     
-    
+
 def display_choices(responses):
     cols = st.columns(len(responses))
     for i, col in enumerate(cols):
@@ -107,6 +89,9 @@ def display_choices(responses):
             response = responses[i]
             st.write(f"**{response['displayName']['text']}**")
             st.write(f"Rating: {response['rating']} ({response['userRatingCount']} reviews)")
+            distance = maps_functionalities.get_distance(coordinates, response['name'])
+            st.write(f"Distance: {distance}")
+            st.write("[Take Me to Google Maps](%s)" % response['googleMapsUri'])
             if 'generativeSummary' in response:
                 st.write(f"About: {response['generativeSummary']['overview']['text']}")
             else:
@@ -124,6 +109,8 @@ def restaurant_qa(query):
         response = get_llm_response(query)
     st.session_state.messages.append({"role": "assistant", "content": response})
 
+def enable_submit_button():
+    st.session_state.disabled = False
 
 if 'food_options' not in st.session_state:
     st.session_state.food_options = False
@@ -135,9 +122,14 @@ if 'place' not in st.session_state:
 st.header("touchgrass", divider="rainbow")
 
 st.subheader("Find Food")
+
+# Limitation: Within a form, the only widget that can have a callback function 
+# is st.form_submit_button, which means I'm going the error route instead of simply
+# disabling the button until the text field is filled out
 with st.form("my-form"):
     query = st.text_input(
-        "What kind of food are you in the mood for? \n\n", placeholder="e.g. sushi, tacos, burgers"
+        "What kind of food are you in the mood for? \n\n", 
+        placeholder="e.g. sushi, tacos, burgers",
     )
     budget = st.radio(
         "What's your budget? \n\n",
@@ -155,7 +147,12 @@ with st.form("my-form"):
         key="num_recs"
     )
     submit_button = st.form_submit_button("Find my Food")
-    
+        
+
+if submit_button and not query:
+    if not query:
+        st.error("Please specify what food you're craving!", icon="🚨")
+        st.stop()
 if submit_button:
     with st.spinner("Generating delicious matches ..."):
         st.session_state.food_options = maps_functionalities.text_search_new(

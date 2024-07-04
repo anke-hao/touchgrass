@@ -7,3 +7,4 @@ google-api-python-client
 st-files-connection
 google.generativeai
 streamlit_js_eval
+googlemaps

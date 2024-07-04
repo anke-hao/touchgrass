@@ -1,8 +1,6 @@
 import streamlit_js_eval
-import time
 import streamlit as st
 from st_files_connection import FilesConnection
-import vertexai
 import maps_functionalities
 from vertexai.generative_models import (
     GenerativeModel,
@@ -10,7 +8,7 @@ from vertexai.generative_models import (
     HarmCategory,
 )
 import google.generativeai as genai
-from streamlit_searchbox import st_searchbox
+# from streamlit_searchbox import st_searchbox
 
 
 
@@ -139,12 +137,6 @@ st.header("touchgrass", divider="rainbow")
 
 st.subheader("Find Food")
 
-# location = st_searchbox(
-#         display_autocomplete_options,
-#         # label = "Optional: where do you want to search around, if not your current location? \n\n",
-#         # placeholder="location to search around",
-        
-#     )
 
 
 # Limitation: Within a form, the only widget that can have a callback function 
@@ -152,33 +144,6 @@ st.subheader("Find Food")
 # disabling the button until the text field is filled out
 # Limitation: custom module st_searchbox does not work within a streamlit form
 
-# with st.form("my-form"):
-#     query = st.text_input(
-#         "What kind of food are you in the mood for? \n\n", 
-#         placeholder="e.g. sushi, tacos, burgers",
-#     )
-#     # location = st.selectbox(
-#     #     on_change=display_autocomplete_options,
-#     #     label = "Optional: where do you want to search around, if not your current location? \n\n",
-#     #     placeholder="location to search around",
-#     #     options = display_autocomplete_options,
-#     # )
-#     budget = st.radio(
-#         "What's your budget? \n\n",
-#         [
-#             "casual",
-#             "mid-range",
-#             "fine dining",
-#         ],
-#         key="budget",
-#     )
-
-#     num_recs = st.slider(
-#         "How many recommendations are you looking for? \n\n",
-#         1, 5, 3,
-#         key="num_recs"
-#     )
-#     submit_button = st.form_submit_button("Find my Food")
 with st.form("my-form"):
     query = st.text_input(
         "What kind of food are you in the mood for? \n\n", 
@@ -202,13 +167,7 @@ with st.form("my-form"):
     )
     # Limitation: on_change for selectbox is only when you actually click on an 
     # option and it changes, not if you type in something. Used custom component instead
-    # st.session_state.location = st_searchbox(
-    #         display_autocomplete_options,
-    #         label = "Optional: where do you want to search around, if not your current location? \n\n",
-    #         placeholder="location to search around",
-    # )
 
-    # location = None
     location = st.text_input(
         label = "Optional: where do you want to search around, if not your current location? \n\n",
         placeholder="location to search around",

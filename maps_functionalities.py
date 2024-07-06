@@ -1,8 +1,4 @@
-# import pandas as pd # pip install pandas
-from google_apis import create_service
 import streamlit as st
-
-# import os
 import requests
 import googlemaps
 maps_key = st.secrets["GOOGLE_MAPS_API"]
@@ -37,10 +33,7 @@ def get_distance(coordinates, place_id):
     return miles
 
 
-# https://developers.google.com/maps/documentation/places/web-service/experimental/places-generative
-
 def autocomplete(query):
-    # response = requests.get(f"https://places.googleapis.com/v1/{query}?fields=*&key={st.secrets['GOOGLE_MAPS_API']}")
     url = 'https://places.googleapis.com/v1/places:autocomplete'
 
     # Define the headers
@@ -54,6 +47,7 @@ def autocomplete(query):
     }
     response = requests.post(url, headers=headers, json=request_body)
     return response.json()
+
 
 def geocoder(address):
     geocode_result = gmaps.geocode(address)
@@ -72,7 +66,7 @@ def text_search_new(query, budget, num_recs, coordinates):
     # Define the headers
     headers = {
         'Content-Type': 'application/json',
-        'X-Goog-Api-Key': st.secrets["GOOGLE_MAPS_API"],  # Replace 'API_KEY' with your actual Google Places API key
+        'X-Goog-Api-Key': st.secrets["GOOGLE_MAPS_API"],  
         'X-Goog-FieldMask': 'places.name,places.displayName,places.primaryType,places.rating,' \
             'places.userRatingCount,places.priceLevel,places.generativeSummary.overview,' \
             'places.googleMapsUri'
@@ -102,6 +96,7 @@ def get_place_details(name):
     response = requests.get(f"https://places.googleapis.com/v1/{name}?fields=*&key={st.secrets['GOOGLE_MAPS_API']}")
     return response.json()
 
+
 def nearby_search(query, budget, num_recs, latitude, longitude):
     request_body = {
         'includedTypes': get_food_type(query),
@@ -119,12 +114,3 @@ def nearby_search(query, budget, num_recs, latitude, longitude):
     }
     return request_body
     
-
-# try maps (seems to be slightly more accurate than geocoder)
-def get_maps_coordinates():
-    url = f'https://www.googleapis.com/geolocation/v1/geolocate?key={maps_key}'
-
-    coordinates = requests.post(url).json()
-    # return a tuple with latitude and longitude
-    print(coordinates)
-    return (coordinates['location']['lat'], coordinates['location']['lng'])

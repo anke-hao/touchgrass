@@ -1,26 +1,11 @@
 import streamlit_js_eval
 import streamlit as st
-from st_files_connection import FilesConnection
 import maps_functionalities
-from vertexai.generative_models import (
-    GenerativeModel,
-    HarmBlockThreshold,
-    HarmCategory,
-)
 import google.generativeai as genai
-# from streamlit_searchbox import st_searchbox
 
-
-
-# PROJECT_ID = "rosy-hangout-424004-f7"  # Your Google Cloud Project ID
-# LOCATION = "us-central1"  # Your Google Cloud Project Region
 
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-
-# vertexai.init(project=PROJECT_ID, location=LOCATION)
-
 initial_coordinates = streamlit_js_eval.get_geolocation()
-
 
 
 def load_model():
@@ -33,12 +18,6 @@ def load_model():
     config = {
         "temperature": 0.7,
         "max_output_tokens": 2048,
-    }
-    safety_settings = {
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     }
     system_instruction = f"""You are a helpful local guide who knows the best food in the area. \n
     You must answer questions about {st.session_state.place_name} as accurately as possible, given 
@@ -54,10 +33,12 @@ def load_model():
         )
     return model_flash
 
+
 def stream_data(query):
     stream = st.session_state.chat.send_message(query, stream=True)
     for part in stream:
         yield part.text
+       
         
 def get_llm_response(query):
     response = st.write_stream(stream_data(query))
@@ -67,7 +48,6 @@ def get_llm_response(query):
 def get_place(place_id, place_name):
     st.session_state.place = place_id
     st.session_state.place_name = place_name
-    # st.session_state.place_details = maps_functionalities.places_hub('place_details', st.session_state.place, 0, 0)
     st.session_state.place_details = maps_functionalities.get_place_details(st.session_state.place)
     st.session_state.messages = []
     print(st.session_state.place_name)
@@ -101,9 +81,6 @@ def display_choices(responses):
 
 
 def display_autocomplete_options(search_term):
-    print("HERE")
-    # st.session_state.place = False
-    # st.session_state.food_options = False
     if search_term:
         suggestions = maps_functionalities.autocomplete(search_term)["suggestions"]
         parsed_suggestions = []
@@ -113,6 +90,7 @@ def display_autocomplete_options(search_term):
         return parsed_suggestions
     else:
         return None
+
 
 # input: json of restaurant details
 def restaurant_qa(query):            
@@ -125,7 +103,6 @@ def restaurant_qa(query):
     st.session_state.messages.append({"role": "assistant", "content": response})
 
 
-
 if 'food_options' not in st.session_state:
     st.session_state.food_options = False
     
@@ -136,7 +113,6 @@ if 'place' not in st.session_state:
 st.header("touchgrass", divider="rainbow")
 
 st.subheader("Find Food")
-
 
 
 # Limitation: Within a form, the only widget that can have a callback function 
@@ -182,9 +158,7 @@ with st.form("my-form"):
             options = selections,
         )
     submit_button = st.form_submit_button("Find my Food")
-# submit_button = st.button("Find my Food")
-        
-# if query:
+
         
 if submit_button and not query:
     st.error("Please specify what food you're craving!", icon="🚨")
@@ -204,6 +178,7 @@ if submit_button:
             num_recs = num_recs,
             coordinates = st.session_state.coordinates
         )
+        
 if st.session_state.food_options:
     st.subheader("Your matches:", divider='gray')
     display_choices(st.session_state.food_options) 

@@ -9,4 +9,4 @@ google.generativeai
 streamlit_js_eval
 googlemaps
 folium
-st_folium
+streamlit_folium

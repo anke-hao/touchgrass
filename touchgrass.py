@@ -150,7 +150,6 @@ def display_choices(recommendations):
 
 def display_map(recommendations):
     lat, lng = (st.session_state.coordinates['lat'], st.session_state.coordinates['lng'])
-    # lat = st.session_state.coordinates['lat']
     m = folium.Map(location=[lat, lng], zoom_start=12)
     folium.Marker(
             [lat, lng], popup="Your Location", tooltip="Your Location", icon=folium.Icon(color='red')
@@ -225,7 +224,7 @@ st.subheader("Find A Place")
 # Display form for user input
 with st.form("my-form"):
     query = st.text_input( # text input for main user query
-        "Tell me what you're looking for in your next outing: \n\n", 
+        "What type of place are you looking for? \n\n", 
         placeholder="e.g. sushi, parks, clothes shopping",
     )
 

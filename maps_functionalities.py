@@ -6,7 +6,7 @@ import googlemaps
 maps_key = st.secrets["GOOGLE_MAPS_API"]
 gmaps = googlemaps.Client(key=maps_key)
 
-
+    
 def construct_budget(budget):
     """
     Based on whether user selected "casual", "mid-range", or "fine dining"
@@ -19,10 +19,13 @@ def construct_budget(budget):
     Returns:
         price_dict[budget]: Dictionary value corresponding to 'budget' key
     """
-    price_dict = {'casual': 'PRICE_LEVEL_INEXPENSIVE', 
+    price_dict = {'casual': ['PRICE_LEVEL_INEXPENSIVE', 
+                             'PRICE_LEVEL_UNSPECIFIED'],
                   'mid-range': 'PRICE_LEVEL_MODERATE', 
-                  'fine dining': ['PRICE_LEVEL_EXPENSIVE', 
-                                  'PRICE_LEVEL_VERY_EXPENSIVE']
+                  'expensive': ['PRICE_LEVEL_EXPENSIVE', 
+                                  'PRICE_LEVEL_VERY_EXPENSIVE'],
+                  'give me everything': \
+                      'PRICE_LEVEL_UNSPECIFIED',
                 }
     return price_dict[budget]
 
@@ -114,6 +117,8 @@ def text_search_new(query, budget, num_recs, coordinates):
         print(e)
     url = 'https://places.googleapis.com/v1/places:searchText'
 
+    budget = construct_budget(budget)
+    
     headers = {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': st.secrets["GOOGLE_MAPS_API"],  
@@ -136,9 +141,11 @@ def text_search_new(query, budget, num_recs, coordinates):
             }
         },
         'rankPreference': 'RELEVANCE',
-        'priceLevels': construct_budget(budget),
     }
+    if budget is not 'PRICE_LEVEL_UNSPECIFIED':
+        request_body['priceLevels'] = budget
     response = requests.post(url, headers=headers, json=request_body)
+    print(response.json())
     places = response.json()['places']
     return places
 

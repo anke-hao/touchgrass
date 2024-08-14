@@ -10,6 +10,8 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 initial_coordinates = streamlit_js_eval.get_geolocation()
 
 
+
+
 def load_model():
     """
     Load the generative model.
@@ -24,7 +26,7 @@ def load_model():
         "max_output_tokens": 2048,
     }
     system_instruction = f"""
-        You are a helpful local guide who knows the best food in the area. \n
+        You are a helpful local guide who knows the best places in the area. \n
         You must answer questions about {st.session_state.place_name} as 
         accurately as possible, given the user query {query} and the following 
         JSON of details: \n
@@ -50,7 +52,12 @@ def stream_data(query):
     """
     stream = st.session_state.chat.send_message(query, stream=True)
     for part in stream:
-        yield part.text
+        try: 
+            yield part.text
+        except:
+            print(part)
+            continue
+        
        
         
 def get_llm_response(query):
@@ -82,10 +89,10 @@ def get_place(place_id, place_name):
     st.session_state.place_name = place_name
     st.session_state.place_details = maps_func.get_place_details(st.session_state.place)
     st.session_state.messages = []
-    restaurant_start_chat()
+    start_chat()
     
 
-def restaurant_start_chat():
+def start_chat():
     """
     Preprocesses the response to be streamed, by yielding the response text 
         chunks as they are generated
@@ -183,7 +190,7 @@ def display_autocomplete_options(search_term):
         return None
 
 
-def restaurant_qa(query):
+def place_qa(query):
     """
     Displays and handles the Q&A restaurant chatbot experience
 
@@ -203,21 +210,23 @@ def restaurant_qa(query):
 
 
 # Initializing session state variables if they were not already initialized
-if 'food_options' not in st.session_state:
-    st.session_state.food_options = False
+if 'place_options' not in st.session_state:
+    st.session_state.place_options = False
 if 'place' not in st.session_state:
     st.session_state.place = False
     
     
 # Rendering the headers of the website            
 st.header("touchgrass", divider="rainbow")
-st.subheader("Find Food")
+st.write("✨ an AI local guide to recommend places and answer your questions "\
+         "about them ✨")
+st.subheader("Find A Place")
 
 # Display form for user input
 with st.form("my-form"):
     query = st.text_input( # text input for main user query
-        "What kind of food are you in the mood for? \n\n", 
-        placeholder="e.g. sushi, tacos, burgers",
+        "Tell me what you're looking for in your next outing: \n\n", 
+        placeholder="e.g. sushi, parks, clothes shopping",
     )
 
     budget = st.radio( # radio button for user budget
@@ -225,9 +234,13 @@ with st.form("my-form"):
         [
             "casual",
             "mid-range",
-            "fine dining",
+            "expensive",
+            "give me everything"
         ],
         key="budget",
+        help="pick 'give me everything' for public places like parks. "\
+            "Otherwise, you'll see recommendations falling specifically within"\
+                " the 'casual', 'mid-range', or 'expensive' ranges."
     )
 
     num_recs = st.slider( # slider for number of recommendations to generate
@@ -252,17 +265,17 @@ with st.form("my-form"):
             options = selections,
         )
         
-    submit_button = st.form_submit_button("Find my Food")
+    submit_button = st.form_submit_button("Find my Next Destination")
 
 # if the user clicked submit without inputting what they wanted to search, 
 # throw an error to prompt them to input something and stop execution
 if submit_button and not query:
-    st.error("Please specify what food you're craving!", icon="🚨")
+    st.error("Please specify your preferences!", icon="🚨")
     st.stop()
 
 # happy path: user inputted their search and clicked submit
 if submit_button and query:
-    with st.spinner("Generating delicious matches ..."):
+    with st.spinner("Generating exciting matches ..."):
         # if a location is specified, use that instead of user's current location
         if final_location: 
             st.session_state.coordinates = maps_func.geocoder(final_location)
@@ -271,18 +284,18 @@ if submit_button and query:
             st.session_state.coordinates = {
                 "lat": initial_coordinates['coords']['latitude'], 
                 "lng": initial_coordinates['coords']['longitude']}
-        # get food recommendations
-        st.session_state.food_options = maps_func.text_search_new(
+        # get place recommendations
+        st.session_state.place_options = maps_func.text_search_new(
             query = query,
             budget = budget,
             num_recs = num_recs,
             coordinates = st.session_state.coordinates
         )
 
-# if food recommendations were returned, display them
-if st.session_state.food_options:
+# if place recommendations were returned, display them
+if st.session_state.place_options:
     st.subheader("Your matches:", divider='gray')
-    display_choices(st.session_state.food_options) 
+    display_choices(st.session_state.place_options) 
     
 # if user clicked "Learn More" and additional information about the place was 
 # retrieved, start chat session about the place 
@@ -307,4 +320,4 @@ if st.session_state.place:
     if query := st.chat_input(
         f"Ask me anything about {st.session_state.place_name}", 
         key='user_chat'):
-        restaurant_qa(query)
+        place_qa(query)

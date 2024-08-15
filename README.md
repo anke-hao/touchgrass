@@ -8,6 +8,9 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 
 # Features:
 ### Search for restaurants nearby based on user criteria/information:
+
+![image of user input form](media/touchgrass_form.png)
+
 | User Criteria | Type | Description |
 | -------- | ------- | ------- |
 | Location  | N/A or free text field | (1) the user’s own location, automatically collected with permission or (2) a user inputted address |
@@ -16,6 +19,9 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 | # of Recommendations | Slider | Number of recommendations to generate |
   
 ### View restaurant(s) information:
+
+![image of touchgrass recommendations](media/touchgrass_place_recs.png)
+
 - Name
 - Rating
 - Number of ratings
@@ -25,6 +31,7 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 - Interactive maps widget with user and place location pins
   
 ### Chat about a specific restaurant by clicking “Learn More”:
+![image of touchgrass chat](media/touchgrass_chat_1.png)
 - Can ask about information that is not displayed in the basic information above, such as hours open
 - Can ask about more niche information, such as whether a place is good for kids/dogs
 - Chat responses generated with Gemini 1.5 Flash
@@ -35,7 +42,7 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 - Adding functionality for displaying locations along a route
 
 # Known Issues:
-- The chatbot occasionally has Markup hiccups that may be a result of Gemini generating LaTeX and Streamlit not picking up on it properly ![image of markdown issue](touchgrass_markdown_issue.png)
+- The chatbot occasionally has Markup hiccups that may be a result of Gemini generating LaTeX and Streamlit not picking up on it properly ![image of markdown issue](media/touchgrass_markdown_issue.png)
 - There may occasionally be the following error, which seems to be documented as a bug from Gemini's own generation:
 ``Please let the response complete iteration before accessing the final accumulated attributes (or call `response.resolve()`)``
 

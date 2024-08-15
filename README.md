@@ -12,21 +12,19 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 - **Vertex AI/Gemini API** for the intro offer I got of $300 in free credits to use in my first three months.
 
 # Features:
-### Search for restaurants nearby based on user criteria/information:
-
-![image of user input form](media/touchgrass_form.png)
-
+## Search for restaurants nearby based on user criteria/information:
 | User Criteria | Type | Description |
 | -------- | ------- | ------- |
 | Location  | N/A or free text field | (1) the user’s own location, automatically collected with permission or (2) a user inputted address |
 | Place | Free text field | What type of place they are looking for |
 | Price Range | Radio button | Casual, mid-range, expensive, or catch-all |
 | # of Recommendations | Slider | Number of recommendations to generate |
+
+<p align="left">
+  <img src="https://github.com/anke-hao/touchgrass/blob/main/media/touchgrass_form.png" width="60%";/>
+</p>
   
-### View restaurant(s) information:
-
-![image of touchgrass recommendations](media/touchgrass_place_recs.png)
-
+## View restaurant(s) information:
 - Name
 - Rating
 - Number of ratings
@@ -34,14 +32,21 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 - Google Maps URI
 - About (generative summary)
 - Interactive maps widget with user and place location pins
-  
-### Chat about a specific restaurant by clicking “Learn More”:
-![image of touchgrass chat](media/touchgrass_chat_1.png)
 
+<p align="left">
+  <img src="https://github.com/anke-hao/touchgrass/blob/main/media/touchgrass_place_recs.png" width="60%";/>
+</p>
+
+  
+## Chat about a specific restaurant by clicking “Learn More”:
 - Ask about information that is not displayed in the basic information above, such as hours open
 - Ask about more niche information, such as whether a place is good for kids/dogs
 - Receive chat responses generated with Gemini 1.5 Flash
 - Switch chat context anytime by clicking on a different place's “Learn More”
+
+<p align="left">
+  <img src="https://github.com/anke-hao/touchgrass/blob/main/media/touchgrass_chat_1.png" width="60%";/>
+</p>
   
 # Future improvements:
 - Incorporating function calling for enhanced accuracy

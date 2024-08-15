@@ -6,11 +6,6 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 - Google Maps/Places due to my app’s functionality (the API also allows for $200 worth of API calls for free every month, which definitely doesn’t hurt)
 - Vertex AI/Gemini API for the intro offer I got of $300 in free credits to use in my first three months.
 
-# Takeaways:
-I ended up learning a lot more than expected about Streamlit and about various hurdles to implementing Vertex AI. 
-
-I did learn more about prompt engineering/implementing generative AI chat, but it turned out not to be the focus of most challenges I faced--I think that goes more to show how easy it is to prototype generative AI functionality using a foundational model, compared to learning everything else that is needed to build out the app. I’ve heard of two key challenges in building genAI apps; one is productionizing them, and the second is prioritizing usability of their interfaces.
-
 # Features:
 ### Search for restaurants nearby based on user criteria/information:
 - Location [Type: N/A or free text field]

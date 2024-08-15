@@ -1,10 +1,15 @@
 # Introduction: 
+touchgrass is an AI local guide that can recommend several places for you to check out and answer your questions about those places.
+
+**Demo video here: https://youtu.be/N1roeHgri00**
+
+## Motivation
 I wanted to learn how to build a prototype of something that leveraged generative AI as well as gave me some exposure on how to work with external data sources, including how to call APIs and leverage API data.
 
 This was my first time working with this “stack” (Streamlit, Vertex AI/Gemini API, and Google Maps/Places). Reasons for choosing each of these components:
-- Streamlit for its perceived ease of displaying prototypes as webapps using a pythonic approach
-- Google Maps/Places due to my app’s functionality (the API also allows for $200 worth of API calls for free every month, which definitely doesn’t hurt)
-- Vertex AI/Gemini API for the intro offer I got of $300 in free credits to use in my first three months.
+- **Streamlit** for its perceived ease of displaying prototypes as webapps using a pythonic approach
+- **Google Maps/Places** due to my app’s functionality (the API also allows for $200 worth of API calls for free every month, which definitely doesn’t hurt)
+- **Vertex AI/Gemini API** for the intro offer I got of $300 in free credits to use in my first three months.
 
 # Features:
 ### Search for restaurants nearby based on user criteria/information:
@@ -32,17 +37,19 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
   
 ### Chat about a specific restaurant by clicking “Learn More”:
 ![image of touchgrass chat](media/touchgrass_chat_1.png)
-- Can ask about information that is not displayed in the basic information above, such as hours open
-- Can ask about more niche information, such as whether a place is good for kids/dogs
-- Chat responses generated with Gemini 1.5 Flash
-- Can switch chat context anytime by clicking on a different place's “Learn More”
+
+- Ask about information that is not displayed in the basic information above, such as hours open
+- Ask about more niche information, such as whether a place is good for kids/dogs
+- Receive chat responses generated with Gemini 1.5 Flash
+- Switch chat context anytime by clicking on a different place's “Learn More”
   
 # Future improvements:
 - Incorporating function calling for enhanced accuracy
 - Adding functionality for displaying locations along a route
 
 # Known Issues:
-- The chatbot occasionally has Markup hiccups that may be a result of Gemini generating LaTeX and Streamlit not picking up on it properly ![image of markdown issue](media/touchgrass_markdown_issue.png)
+- The chatbot occasionally has Markup hiccups that may be a result of Gemini generating LaTeX and Streamlit not picking up on it properly (example below):
+  ![image of markdown issue](touchgrass_markdown_issue.png)
 - There may occasionally be the following error, which seems to be documented as a bug from Gemini's own generation:
 ``Please let the response complete iteration before accessing the final accumulated attributes (or call `response.resolve()`)``
 

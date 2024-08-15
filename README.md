@@ -8,12 +8,12 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 
 # Features:
 ### Search for restaurants nearby based on user criteria/information:
-- Location [Type: N/A or free text field]
-  - Option 1: the user’s own location, which is automatically collected with permission
-  - Option 2: an inputted address 
-- What type of place they are looking for [Type: free text field]
-- Price range [Type: radio button]
-- Number of recommendations to generate [Type: slider]
+| User Criteria | Type | Description |
+| -------- | ------- | ------- |
+| Location  | N/A or free text field | (1) the user’s own location, automatically collected with permission or (2) a user inputted address |
+| Place | free text field | What type of place they are looking for |
+| Price range | radio button | casual, mid-range, expensive, or catch-all |
+| # of recommendations | slider | Number of recommendations to generate |
   
 ### View restaurant(s) information:
 - Name

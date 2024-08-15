@@ -32,7 +32,7 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 - Name
 - Rating
 - Number of ratings
-   Distance
+- Distance
 - Google Maps URI
 - About (generative summary)
 - Interactive maps widget with user and place location pins

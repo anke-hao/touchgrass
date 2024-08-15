@@ -7,9 +7,13 @@ touchgrass is an AI local guide that can recommend several places for you to che
 I wanted to learn how to build a prototype of something that leveraged generative AI as well as gave me some exposure on how to work with external data sources, including how to call APIs and leverage API data.
 
 This was my first time working with this “stack” (Streamlit, Vertex AI/Gemini API, and Google Maps/Places). Reasons for choosing each of these components:
-- **Streamlit** for its perceived ease of displaying prototypes as webapps using a pythonic approach
-- **Google Maps/Places** due to my app’s functionality (the API also allows for $200 worth of API calls for free every month, which definitely doesn’t hurt)
-- **Vertex AI/Gemini API** for the intro offer I got of $300 in free credits to use in my first three months.
+
+| Name | Functionality | Reason |
+| -------- | ------- | ------- |
+| Streamlit  | Frontend | Perceived ease of displaying prototypes as webapps using a pythonic approach |
+| Google Places API | Retrieves Google Places data from nearby locations | Most robust dataset for locations, also allows for $200 worth of API calls for free every month |
+| Vertex AI/Gemini API | LLM text generation | Intro offer I got of $300 in free Vertex AI credits to use in my first three months + [free Gemini API calls up to certain limits](https://ai.google.dev/pricing) |
+
 
 # Features:
 ## Search for restaurants nearby based on user criteria/information:

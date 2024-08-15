@@ -11,9 +11,9 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 | User Criteria | Type | Description |
 | -------- | ------- | ------- |
 | Location  | N/A or free text field | (1) the user’s own location, automatically collected with permission or (2) a user inputted address |
-| Place | free text field | What type of place they are looking for |
-| Price range | radio button | casual, mid-range, expensive, or catch-all |
-| # of recommendations | slider | Number of recommendations to generate |
+| Place | Free text field | What type of place they are looking for |
+| Price Range | Radio button | Casual, mid-range, expensive, or catch-all |
+| # of Recommendations | Slider | Number of recommendations to generate |
   
 ### View restaurant(s) information:
 - Name
@@ -35,8 +35,8 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 - Adding functionality for displaying locations along a route
 
 # Known Issues:
-- The chatbot occasionally has Markup hiccups that may be a result of Gemini generating LaTeX and Streamlit not picking up on it properly
-- There may occasionally be the following error, which seems to be documented as a bug from Gemini generation
+- The chatbot occasionally has Markup hiccups that may be a result of Gemini generating LaTeX and Streamlit not picking up on it properly ![image of markdown issue](touchgrass_markdown_issue.png)
+- There may occasionally be the following error, which seems to be documented as a bug from Gemini's own generation:
 ``Please let the response complete iteration before accessing the final accumulated attributes (or call `response.resolve()`)``
 
 

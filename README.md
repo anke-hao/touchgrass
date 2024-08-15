@@ -49,12 +49,13 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 </p>
   
 # Future improvements:
-- Incorporating function calling for enhanced accuracy
+- Incorporating function calling for enhanced accuracy (simultanously enabling streaming + function calling does not seem to be supported with Gemini as of now: [Open Github Issue](https://github.com/google-gemini/cookbook/issues/47#issue-2235523392))
 - Adding functionality for displaying locations along a route
 
 # Known Issues:
 - The chatbot occasionally has Markup hiccups that may be a result of Gemini generating LaTeX and Streamlit not picking up on it properly (example below):
-  ![image of markdown issue](touchgrass_markdown_issue.png)
+  
+  ![image of markdown issue](media/touchgrass_markdown_issue.png)
 - There may occasionally be the following error, which seems to be documented as a bug from Gemini's own generation:
 ``Please let the response complete iteration before accessing the final accumulated attributes (or call `response.resolve()`)``
 

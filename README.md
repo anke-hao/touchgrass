@@ -34,7 +34,7 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 - Number of ratings
 - Distance
 - Google Maps URI
-- About (generative summary)
+- About (generative summary from Google Places API)
 - Interactive maps widget with user and place location pins
 
 <p align="left">
@@ -53,6 +53,7 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 </p>
   
 # Future improvements:
+- Generating places summaries where the Google Places API doesn't return a generative summary on its own
 - Incorporating function calling for enhanced accuracy (simultanously enabling streaming + function calling does not seem to be supported with Gemini as of now: [Open Github Issue](https://github.com/google-gemini/cookbook/issues/47#issue-2235523392))
 - Adding functionality for displaying locations along a route
 

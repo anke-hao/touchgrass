@@ -1,7 +1,8 @@
 # Introduction: 
-touchgrass is an AI local guide that can recommend several places for you to check out and answer your questions about those places.
+touchgrass is an AI local guide that can recommend places for you to check out and answer your questions about them.
 
 **Demo video here: https://youtu.be/N1roeHgri00**
+**App: https://touch-grass.streamlit.app/**
 
 ## Motivation
 I wanted to learn how to build a prototype of something that leveraged generative AI as well as gave me some exposure on how to work with external data sources, including how to call APIs and leverage API data.

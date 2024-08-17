@@ -2,6 +2,7 @@
 touchgrass is an AI local guide that can recommend places for you to check out and answer your questions about them.
 
 **Demo video here: https://youtu.be/N1roeHgri00**
+
 **App: https://touch-grass.streamlit.app/**
 
 ## Motivation

@@ -1,3 +1,11 @@
+### Table of Contents 
+- [Introduction](#introduction)
+  - [Motivation](#motivation)
+- [Features](#features)
+- [Future improvements](#future-improvements)
+- [Lessons Learned](#lessons-learned)  
+- [Versions](#versions)
+
 # Introduction: 
 touchgrass is an AI local guide that can recommend places for you to check out and answer your questions about them.
 
@@ -67,10 +75,11 @@ This was my first time working with this “stack” (Streamlit, Vertex AI/Gemin
 ``Please let the response complete iteration before accessing the final accumulated attributes (or call `response.resolve()`)``
 
 
-# Lessons Learned and Challenges:
+# Lessons Learned:
 Linked [here](https://docs.google.com/document/d/1trnOI8a_BXjLVzR5KyACOk1MHnrXKgk9a5vRRSIWOwE/edit?usp=sharing).
 
 
+# Versions
 ## V4 (current)
 ### Demo:
 https://youtu.be/N1roeHgri00
